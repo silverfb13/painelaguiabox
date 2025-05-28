@@ -95,6 +95,4 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
     alert("Erro ao salvar usuário.");
   }
 });
-
-// Inicializa o painel
 atualizarTabela();
