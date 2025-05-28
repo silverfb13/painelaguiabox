@@ -1,0 +1,21 @@
+body {
+  background-color: #f0f2f5;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.card {
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.navbar {
+  border-radius: 0 0 10px 10px;
+}
+
+.btn-close {
+  background-color: #fff;
+}
