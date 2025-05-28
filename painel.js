@@ -8,12 +8,13 @@ async function getUsers() {
     headers: { Authorization: `Bearer ${apiToken}` }
   });
   const code = await res.text();
-  const match = code.match(/const users = ({[\s\S]*?})/);
-  if (!match) return {};
+  const inicio = code.indexOf("const users = ");
+  const fim = code.indexOf("};", inicio) + 1;
+  const trecho = code.substring(inicio, fim);
   try {
-    return eval(`(${match[1]})`);
-  } catch (e) {
-    console.error("Erro ao interpretar JSON de usuários:", e);
+    const json = trecho.match(/const users = (.*);/s)[1];
+    return JSON.parse(json);
+  } catch {
     return {};
   }
 }
@@ -22,9 +23,13 @@ async function updateUsers(newUsers) {
   const res = await fetch(apiUrl, {
     headers: { Authorization: `Bearer ${apiToken}` }
   });
-  const code = await res.text();
-  const novoTrecho = `const users = ${JSON.stringify(newUsers, null, 2)}`;
-  const novoCodigo = code.replace(/const users = ({[\s\S]*?})/, novoTrecho);
+  let code = await res.text();
+  const inicio = code.indexOf("const users = ");
+  const fim = code.indexOf("};", inicio) + 1;
+  const antes = code.substring(0, inicio);
+  const depois = code.substring(fim + 1);
+  const novoUsers = `const users = ${JSON.stringify(newUsers, null, 2)};`;
+  const novoCodigo = antes + novoUsers + depois;
 
   const formData = new FormData();
   formData.append("script", new Blob([novoCodigo], { type: "application/javascript" }), `${workerName}.js`);
@@ -34,6 +39,7 @@ async function updateUsers(newUsers) {
     headers: { Authorization: `Bearer ${apiToken}` },
     body: formData
   });
+
   return upload.ok;
 }
 
@@ -77,7 +83,10 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
   const p = document.getElementById("newPassword").value.trim();
   const v = parseInt(document.getElementById("validade").value);
   const users = await getUsers();
-  users[u] = { senha: p, expira_em: v > 0 ? Math.floor(Date.now() / 1000) + v : 0 };
+  users[u] = {
+    senha: p,
+    expira_em: v > 0 ? Math.floor(Date.now() / 1000) + v : 0
+  };
   const sucesso = await updateUsers(users);
   if (sucesso) {
     bootstrap.Modal.getInstance(document.getElementById("addUserModal")).hide();
@@ -87,4 +96,5 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
   }
 });
 
+// Inicializa o painel
 atualizarTabela();
