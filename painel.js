@@ -1,4 +1,3 @@
-//  painel.js - com novo token do GitHub atualizado
 const jsonUrl = "https://api.github.com/repos/silverfb13/painelaguiabox/contents/usuarios.json";
 const token = "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";
 
@@ -9,15 +8,15 @@ async function carregarUsuarios() {
   const data = await res.json();
   const content = atob(data.content);
   const json = JSON.parse(content);
-  json._sha = data.sha; // necessário para update
+  json._sha = data.sha;
   return json;
 }
 
 async function salvarUsuarios(novosUsuarios, sha) {
   const body = {
-    message: "Atualização de usuários via painel",
+    message: "Update via painel",
     content: btoa(JSON.stringify(novosUsuarios, null, 2)),
-    sha: sha
+    sha
   };
   const res = await fetch(jsonUrl, {
     method: "PUT",
@@ -36,52 +35,34 @@ function gerarLink(user, pass) {
 
 async function atualizarTabela() {
   const tabela = document.getElementById("usersTable");
-  const countBox = document.getElementById("userCount");
-  tabela.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
   const users = await carregarUsuarios();
+  const sha = users._sha;
   delete users._sha;
   tabela.innerHTML = "";
-  let total = 0;
-  for (const usuario in users) {
-    const senha = users[usuario];
-    total++;
-    tabela.innerHTML += `
-      <tr>
-        <td>${usuario}</td>
-        <td>${senha}</td>
-        <td>Ilimitado</td>
-        <td><div class='link-box'>${gerarLink(usuario, senha)}</div></td>
-        <td><button class='btn btn-sm btn-danger' onclick='removerUsuario("${usuario}")'>Excluir</button></td>
-      </tr>`;
+  for (const u in users) {
+    const p = users[u];
+    tabela.innerHTML += `<tr><td>${u}</td><td>${p}</td><td><a href='${gerarLink(u,p)}' target='_blank'>Abrir</a></td><td><button onclick='removerUsuario("${u}")'>Excluir</button></td></tr>`;
   }
-  countBox.textContent = total;
+  window._sha = sha;
+  window._users = users;
 }
 
 async function removerUsuario(nome) {
-  if (!confirm(`Deseja realmente excluir o usuário '${nome}'?`)) return;
-  const users = await carregarUsuarios();
-  const sha = users._sha;
-  delete users[nome];
-  delete users._sha;
-  const ok = await salvarUsuarios(users, sha);
+  delete window._users[nome];
+  const ok = await salvarUsuarios(window._users, window._sha);
   if (ok) atualizarTabela();
-  else alert("Erro ao excluir usuário.");
 }
 
-document.getElementById("userForm").addEventListener("submit", async (e) => {
+document.getElementById("userForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const nome = document.getElementById("newUsername").value.trim();
-  const senha = document.getElementById("newPassword").value.trim();
-  if (!nome || !senha) return alert("Preencha os campos");
-  const users = await carregarUsuarios();
-  const sha = users._sha;
-  delete users._sha;
-  users[nome] = senha;
-  const ok = await salvarUsuarios(users, sha);
+  const u = document.getElementById("newUsername").value.trim();
+  const p = document.getElementById("newPassword").value.trim();
+  window._users[u] = p;
+  const ok = await salvarUsuarios(window._users, window._sha);
   if (ok) {
     bootstrap.Modal.getInstance(document.getElementById("addUserModal")).hide();
     atualizarTabela();
-  } else alert("Erro ao adicionar usuário");
+  }
 });
 
 atualizarTabela();
