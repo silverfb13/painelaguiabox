@@ -1,3 +1,4 @@
+// painel.js - com novo token do GitHub atualizado
 const jsonUrl = "https://api.github.com/repos/silverfb13/painelaguiabox/contents/usuarios.json";
 const token = "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";
 
