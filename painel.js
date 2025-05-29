@@ -1,4 +1,4 @@
-const jsonUrl = "https://api.github.com/repos/silverfb13/painelaguiabox/contents/usuarios.json";
+const jsonUrl = "https://github.com/silverfb13/painelaguiabox/edit/main/usuarios.json";
 const token = "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";
 
 async function carregarUsuarios() {
