@@ -1,73 +1,36 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Aguiabox</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .login-box {
-      background: #ffffff10;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 400px;
-    }
-    .form-control {
-      background-color: #fff;
-    }
-    .btn-primary {
-      width: 100%;
-    }
-    .error {
-      color: #ffc107;
-      margin-top: 1rem;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Painel IPTV</title>
+  <link href="painel.css" rel="stylesheet">
 </head>
 <body>
   <div class="login-box">
-    <h3 class="text-center text-white mb-4">Painel Aguiabox</h3>
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="username" class="form-label">Usuário</label>
-        <input type="text" id="username" class="form-control" required />
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Senha</label>
-        <input type="password" id="password" class="form-control" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Entrar</button>
-      <div id="error" class="error text-center"></div>
+    <h2>Login</h2>
+    <form onsubmit="login(event)">
+      <input type="text" id="loginUser" placeholder="Usuário" required />
+      <input type="password" id="loginPass" placeholder="Senha" required />
+      <button type="submit">Entrar</button>
     </form>
-  </div>  <script>
-    const loginForm = document.getElementById("loginForm");
-    const errorDiv = document.getElementById("error");
-
-    const usuarios = {
-      "silverfb13": "lfbs1706",
-      "Aldemir": "admin"
+  </div>
+  <script>
+    const logins = {
+      silverfb13: "lfbs1706",
+      Aldemir: "admin"
     };
-
-    loginForm.addEventListener("submit", function (e) {
+    function login(e) {
       e.preventDefault();
-      const user = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value.trim();
-
-      if (usuarios[user] && usuarios[user] === pass) {
-        window.location.href = "dashboard.html";
+      const u = document.getElementById("loginUser").value;
+      const p = document.getElementById("loginPass").value;
+      if (logins[u] === p) {
+        sessionStorage.setItem("auth", "ok");
+        location.href = "dashboard.html";
       } else {
-        errorDiv.textContent = "Usuário ou senha inválidos.";
+        alert("Login ou senha incorretos");
       }
-    });
-  </script></body>
+    }
+  </script>
+</body>
 </html>
