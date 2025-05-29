@@ -1,29 +1,32 @@
 body {
-  background: #f5f7fa;
-  font-family: Arial, sans-serif;
+  background: #f2f4f8;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
   color: #333;
 }
-.login-box {
-  width: 300px;
-  margin: 100px auto;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  text-align: center;
+.login-container, .painel-container {
+  max-width: 500px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
 }
-.login-box input {
+.login-box h2 {
+  margin-bottom: 20px;
+}
+.login-box input, .login-box button {
   width: 100%;
-  margin: 10px 0;
-  padding: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 .login-box button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
+  background-color: #0d6efd;
+  color: white;
   border: none;
-  color: #fff;
-  cursor: pointer;
 }
 .login-box button:hover {
-  background: #0056b3;
+  background-color: #084298;
 }
