@@ -1,7 +1,7 @@
 const workerName = "shiny-frog-756a";
 const accountId = "de758fbcc77916ba79a164714c7581bf";
 const apiToken = "cNDtaY1qwurVApAJCaDAi1Km7xN7a4BoC6Vnra-V";
-const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`;
+const apiUrl = `http://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`;
 
 async function getUsers() {
   const res = await fetch(apiUrl, {
