@@ -1,51 +1,33 @@
-const workerName = "shiny-frog-756a";
-const accountId = "de758fbcc77916ba79a164714c7581bf";
-const apiToken = "cNDtaY1qwurVApAJCaDAi1Km7xN7a4BoC6Vnra-V";
-const apiUrl = `http://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`;
+// painel.js - versão final com token real
+const jsonUrl = "https://api.github.com/repos/silverfb13/painelaguiabox/contents/usuarios.json";
+const token = "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";
 
-async function getUsers() {
-  const res = await fetch(apiUrl, {
-    headers: { Authorization: `Bearer ${apiToken}` }
+async function carregarUsuarios() {
+  const res = await fetch(jsonUrl, {
+    headers: { Authorization: `Bearer ${token}` }
   });
-  const code = await res.text();
-  const inicio = code.indexOf("const users = ");
-  const fim = code.indexOf("};", inicio) + 1;
-  const trecho = code.substring(inicio, fim);
-  try {
-    const raw = trecho.match(/const users = ({[\s\S]*?})/)[1];
-    const json = raw.replace(/(\w+):\s*"([^"]+)",?/g, '"$1":"$2"').replace(/,\s*}/, '}');
-    return JSON.parse(json);
-  } catch (e) {
-    console.error("Erro ao ler usuários:", e);
-    return {};
-  }
+  const data = await res.json();
+  const content = atob(data.content);
+  const json = JSON.parse(content);
+  json._sha = data.sha; // necessário para update
+  return json;
 }
 
-async function updateUsers(newUsers) {
-  const res = await fetch(apiUrl, {
-    headers: { Authorization: `Bearer ${apiToken}` }
-  });
-  let code = await res.text();
-  const inicio = code.indexOf("const users = ");
-  const fim = code.indexOf("};", inicio) + 1;
-  const antes = code.substring(0, inicio);
-  const depois = code.substring(fim + 1);
-  const linhas = Object.entries(newUsers).map(([u, p]) => `  ${u}: "${p}",`);
-  const novoUsers = `const users = {
-${linhas.join("\n")}
-};`;
-  const novoCodigo = antes + novoUsers + depois;
-
-  const formData = new FormData();
-  formData.append("script", new Blob([novoCodigo], { type: "application/javascript" }), `${workerName}.js`);
-
-  const upload = await fetch(apiUrl, {
+async function salvarUsuarios(novosUsuarios, sha) {
+  const body = {
+    message: "Atualização de usuários via painel",
+    content: btoa(JSON.stringify(novosUsuarios, null, 2)),
+    sha: sha
+  };
+  const res = await fetch(jsonUrl, {
     method: "PUT",
-    headers: { Authorization: `Bearer ${apiToken}` },
-    body: formData
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
   });
-
-  return upload.ok;
+  return res.ok;
 }
 
 function gerarLink(user, pass) {
@@ -56,7 +38,8 @@ async function atualizarTabela() {
   const tabela = document.getElementById("usersTable");
   const countBox = document.getElementById("userCount");
   tabela.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
-  const users = await getUsers();
+  const users = await carregarUsuarios();
+  delete users._sha;
   tabela.innerHTML = "";
   let total = 0;
   for (const usuario in users) {
@@ -76,9 +59,11 @@ async function atualizarTabela() {
 
 async function removerUsuario(nome) {
   if (!confirm(`Deseja realmente excluir o usuário '${nome}'?`)) return;
-  const users = await getUsers();
+  const users = await carregarUsuarios();
+  const sha = users._sha;
   delete users[nome];
-  const ok = await updateUsers(users);
+  delete users._sha;
+  const ok = await salvarUsuarios(users, sha);
   if (ok) atualizarTabela();
   else alert("Erro ao excluir usuário.");
 }
@@ -88,9 +73,11 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
   const nome = document.getElementById("newUsername").value.trim();
   const senha = document.getElementById("newPassword").value.trim();
   if (!nome || !senha) return alert("Preencha os campos");
-  const users = await getUsers();
+  const users = await carregarUsuarios();
+  const sha = users._sha;
+  delete users._sha;
   users[nome] = senha;
-  const ok = await updateUsers(users);
+  const ok = await salvarUsuarios(users, sha);
   if (ok) {
     bootstrap.Modal.getInstance(document.getElementById("addUserModal")).hide();
     atualizarTabela();
