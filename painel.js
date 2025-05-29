@@ -2,17 +2,24 @@ const jsonUrl = "https://api.github.com/repos/silverfb13/painelaguiabox/contents
 const token = "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";
 
 async function carregarUsuarios() {
-  const res = await fetch(jsonUrl, { headers: { Authorization: `Bearer ${token}` } });
-  const data = await res.json();
-  const content = atob(data.content);
-  const json = JSON.parse(content);
-  json._sha = data.sha;
-  return json;
+  try {
+    const res = await fetch(jsonUrl, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const content = atob(data.content);
+    const json = JSON.parse(content);
+    json._sha = data.sha;
+    return json;
+  } catch (e) {
+    alert("Erro ao carregar usuários. Verifique o token ou permissões.");
+    return null;
+  }
 }
 
 async function salvarUsuarios(novos, sha) {
   const body = {
-    message: "Atualizado via Painel",
+    message: "Atualizado via Painel IPTV",
     content: btoa(JSON.stringify(novos, null, 2)),
     sha: sha
   };
@@ -34,14 +41,26 @@ function gerarLink(user, pass) {
 async function atualizarTabela() {
   const table = document.getElementById("usersTable");
   const data = await carregarUsuarios();
+  if (!data || !data._sha) {
+    table.innerHTML = "<tr><td colspan='4'>Erro ao carregar dados.</td></tr>";
+    return;
+  }
+
   const sha = data._sha;
   delete data._sha;
   window._users = data;
   window._sha = sha;
   table.innerHTML = "";
+
   for (const u in data) {
     const p = data[u];
-    table.innerHTML += `<tr><td>${u}</td><td>${p}</td><td><a href='${gerarLink(u, p)}' target='_blank'>Abrir</a></td><td><button onclick='removerUsuario("${u}")' class='btn btn-danger btn-sm'>Excluir</button></td></tr>`;
+    table.innerHTML += `
+      <tr>
+        <td>${u}</td>
+        <td>${p}</td>
+        <td><a href="${gerarLink(u, p)}" target="_blank">Abrir</a></td>
+        <td><button onclick='removerUsuario("${u}")' class='btn btn-danger btn-sm'>Excluir</button></td>
+      </tr>`;
   }
 }
 
@@ -55,11 +74,15 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const u = document.getElementById("newUsername").value.trim();
   const p = document.getElementById("newPassword").value.trim();
+  if (!u || !p) return alert("Preencha usuário e senha.");
+  if (!window._users) return alert("Erro interno: dados não carregados.");
   window._users[u] = p;
   const ok = await salvarUsuarios(window._users, window._sha);
   if (ok) {
     bootstrap.Modal.getInstance(document.getElementById("addUserModal")).hide();
     atualizarTabela();
+  } else {
+    alert("Erro ao salvar usuário.");
   }
 });
 
