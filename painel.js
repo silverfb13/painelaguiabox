@@ -6,13 +6,16 @@ async function carregarUsuarios() {
     const res = await fetch(jsonUrl, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    if (!res.ok) {
+      throw new Error("Token inválido ou sem permissão.");
+    }
     const data = await res.json();
     const content = atob(data.content);
     const json = JSON.parse(content);
     json._sha = data.sha;
     return json;
   } catch (e) {
-    alert("Erro ao carregar usuários. Verifique o token ou permissões.");
+    alert("Erro ao carregar usuários: " + e.message);
     return null;
   }
 }
@@ -42,7 +45,7 @@ async function atualizarTabela() {
   const table = document.getElementById("usersTable");
   const data = await carregarUsuarios();
   if (!data || !data._sha) {
-    table.innerHTML = "<tr><td colspan='4'>Erro ao carregar dados.</td></tr>";
+    table.innerHTML = "<tr><td colspan='4'>Erro ao carregar usuários.</td></tr>";
     return;
   }
 
@@ -68,6 +71,7 @@ async function removerUsuario(nome) {
   delete window._users[nome];
   const ok = await salvarUsuarios(window._users, window._sha);
   if (ok) atualizarTabela();
+  else alert("Erro ao excluir.");
 }
 
 document.getElementById("userForm").addEventListener("submit", async (e) => {
@@ -75,7 +79,7 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
   const u = document.getElementById("newUsername").value.trim();
   const p = document.getElementById("newPassword").value.trim();
   if (!u || !p) return alert("Preencha usuário e senha.");
-  if (!window._users) return alert("Erro interno: dados não carregados.");
+  if (!window._users) return alert("Erro: dados não carregados.");
   window._users[u] = p;
   const ok = await salvarUsuarios(window._users, window._sha);
   if (ok) {
